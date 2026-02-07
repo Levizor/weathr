@@ -4,19 +4,66 @@ use std::path::PathBuf;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    #[serde(default)]
     pub location: Location,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Location {
+    #[serde(default = "default_latitude")]
     pub latitude: f64,
+    #[serde(default = "default_longitude")]
     pub longitude: f64,
+}
+
+fn default_latitude() -> f64 {
+    52.52
+}
+
+fn default_longitude() -> f64 {
+    13.41
+}
+
+impl Default for Location {
+    fn default() -> Self {
+        Self {
+            latitude: default_latitude(),
+            longitude: default_longitude(),
+        }
+    }
 }
 
 impl Config {
     pub fn load() -> Result<Self, String> {
         let config_path = Self::get_config_path()?;
-        Self::load_from_path(&config_path)
+        
+        if !config_path.exists() {
+            eprintln!("Config file not found at {:?}", config_path);
+            eprintln!("Using default location: Berlin (52.52°N, 13.41°E)");
+            return Ok(Self::default());
+        }
+
+        let config = Self::load_from_path(&config_path)?;
+        config.validate()?;
+        Ok(config)
+    }
+
+    fn validate(&self) -> Result<(), String> {
+        if self.location.latitude < -90.0 || self.location.latitude > 90.0 {
+            return Err(format!(
+                "Invalid latitude: {}. Must be between -90.0 and 90.0",
+                self.location.latitude
+            ));
+        }
+
+        if self.location.longitude < -180.0 || self.location.longitude > 180.0 {
+            return Err(format!(
+                "Invalid longitude: {}. Must be between -180.0 and 180.0",
+                self.location.longitude
+            ));
+        }
+
+        Ok(())
     }
 
     pub fn load_from_path(path: &PathBuf) -> Result<Self, String> {
@@ -34,6 +81,14 @@ impl Config {
         };
 
         Ok(config_dir.join("weathr").join("config.toml"))
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            location: Location::default(),
+        }
     }
 }
 
@@ -112,8 +167,9 @@ longitude = 151.2093
 [location]
 longitude = 13.41
 "#;
-        let result: Result<Config, _> = toml::from_str(toml_content);
-        assert!(result.is_err());
+        let config: Config = toml::from_str(toml_content).unwrap();
+        assert_eq!(config.location.latitude, 52.52);
+        assert_eq!(config.location.longitude, 13.41);
     }
 
     #[test]
@@ -122,8 +178,9 @@ longitude = 13.41
 [location]
 latitude = 52.52
 "#;
-        let result: Result<Config, _> = toml::from_str(toml_content);
-        assert!(result.is_err());
+        let config: Config = toml::from_str(toml_content).unwrap();
+        assert_eq!(config.location.latitude, 52.52);
+        assert_eq!(config.location.longitude, 13.41);
     }
 
     #[test]
@@ -148,5 +205,68 @@ longitude = 0.0
         let config: Config = toml::from_str(toml_content).unwrap();
         assert_eq!(config.location.latitude, 0.0);
         assert_eq!(config.location.longitude, 0.0);
+    }
+
+    #[test]
+    fn test_validation_invalid_latitude_high() {
+        let config = Config {
+            location: Location {
+                latitude: 91.0,
+                longitude: 0.0,
+            },
+        };
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("latitude"));
+    }
+
+    #[test]
+    fn test_validation_invalid_latitude_low() {
+        let config = Config {
+            location: Location {
+                latitude: -91.0,
+                longitude: 0.0,
+            },
+        };
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("latitude"));
+    }
+
+    #[test]
+    fn test_validation_invalid_longitude_high() {
+        let config = Config {
+            location: Location {
+                latitude: 0.0,
+                longitude: 181.0,
+            },
+        };
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("longitude"));
+    }
+
+    #[test]
+    fn test_validation_invalid_longitude_low() {
+        let config = Config {
+            location: Location {
+                latitude: 0.0,
+                longitude: -181.0,
+            },
+        };
+        let result = config.validate();
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("longitude"));
+    }
+
+    #[test]
+    fn test_validation_valid_coordinates() {
+        let config = Config {
+            location: Location {
+                latitude: 52.52,
+                longitude: 13.41,
+            },
+        };
+        assert!(config.validate().is_ok());
     }
 }

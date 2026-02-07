@@ -1,54 +1,83 @@
 mod config;
 mod display;
+mod render;
+mod animation;
 
+use animation::{sunny::SunnyAnimation, AnimationController};
 use config::Config;
-use crossterm::{
-    event::{self, Event, KeyCode, KeyModifiers},
-    terminal::{disable_raw_mode, enable_raw_mode},
-};
+use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use display::AsciiDisplay;
+use render::TerminalRenderer;
 use std::io;
 use std::time::{Duration, Instant};
 
 const REFRESH_INTERVAL: Duration = Duration::from_secs(60);
+const FRAME_DELAY: Duration = Duration::from_millis(500);
 
 fn main() -> io::Result<()> {
     let config = match Config::load() {
         Ok(config) => config,
         Err(e) => {
-            eprintln!("Error: {}", e);
-            eprintln!("\nPlease create a config file at:");
+            eprintln!("Error loading config: {}", e);
+            eprintln!("\nContinuing with default location (Berlin: 52.52°N, 13.41°E)");
+            eprintln!("\nTo customize, create a config file at:");
             eprintln!("  $XDG_CONFIG_HOME/weathr/config.toml");
             eprintln!("  or ~/.config/weathr/config.toml");
             eprintln!("\nExample config.toml:");
             eprintln!("  [location]");
             eprintln!("  latitude = 52.52");
             eprintln!("  longitude = 13.41");
-            std::process::exit(1);
+            eprintln!();
+            Config::default()
         }
     };
 
-    enable_raw_mode()?;
+    let mut renderer = TerminalRenderer::new()?;
+    renderer.init()?;
 
-    let result = run_app(&config);
+    let result = run_app(&config, &mut renderer);
 
-    disable_raw_mode()?;
-    AsciiDisplay::clear_screen()?;
+    renderer.cleanup()?;
 
     result
 }
 
-fn run_app(config: &Config) -> io::Result<()> {
+fn run_app(config: &Config, renderer: &mut TerminalRenderer) -> io::Result<()> {
     let house = AsciiDisplay::render_house();
+    let sunny_animation = SunnyAnimation::new();
+    let mut animation_controller = AnimationController::new();
+    
     let mut last_update = Instant::now();
+    let mut last_frame_time = Instant::now();
 
     loop {
-        let weather_info =
-            AsciiDisplay::format_weather_info(config.location.latitude, config.location.longitude);
+        renderer.update_size()?;
+        let (_term_width, term_height) = renderer.get_size();
+        
+        renderer.clear()?;
 
-        AsciiDisplay::render_frame(&house, &weather_info)?;
+        let weather_info = format!(
+            "Weather: Sunny | Location: {:.2}°N, {:.2}°E | Press 'q' to quit",
+            config.location.latitude, config.location.longitude
+        );
+        
+        renderer.render_line_colored(
+            2,
+            1,
+            &weather_info,
+            crossterm::style::Color::Cyan,
+        )?;
 
-        if event::poll(Duration::from_millis(100))? {
+        let animation_y = if term_height > 20 { 3 } else { 2 };
+        animation_controller.render_frame(renderer, &sunny_animation, animation_y)?;
+
+        let house_y = animation_y + 7;
+        let house_strings: Vec<String> = house.iter().map(|s| s.to_string()).collect();
+        renderer.render_centered(&house_strings, house_y)?;
+
+        renderer.flush()?;
+
+        if event::poll(Duration::from_millis(50))? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Char('q') | KeyCode::Char('Q') => break,
@@ -58,6 +87,11 @@ fn run_app(config: &Config) -> io::Result<()> {
                     _ => {}
                 }
             }
+        }
+
+        if last_frame_time.elapsed() >= FRAME_DELAY {
+            animation_controller.next_frame(&sunny_animation);
+            last_frame_time = Instant::now();
         }
 
         if last_update.elapsed() >= REFRESH_INTERVAL {

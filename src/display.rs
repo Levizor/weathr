@@ -20,14 +20,16 @@ impl AsciiDisplay {
             "   |  | []   [] |%\\Y&%'",
             "   |  |   .-.   | ||",
             " ~~@._|@@_|||_@@|~||~~~~~~~~~~~~~",
-            "      `\"\"\") )\"\"\"`",
+            "      `\"\"\") )\"\"\"'`",
         ]
     }
 
+    #[allow(dead_code)]
     pub fn clear_screen() -> io::Result<()> {
         execute!(io::stdout(), Clear(ClearType::All), cursor::MoveTo(0, 0))
     }
 
+    #[allow(dead_code)]
     pub fn render_frame(house: &[&str], weather_info: &str) -> io::Result<()> {
         let mut stdout = io::stdout();
         let (term_width, _term_height) = crossterm::terminal::size()?;
@@ -64,6 +66,7 @@ impl AsciiDisplay {
         stdout.flush()
     }
 
+    #[allow(dead_code)]
     pub fn format_weather_info(latitude: f64, longitude: f64) -> String {
         format!(
             "Weather for: {:.2}°N, {:.2}°E | Press 'q' to quit",
