@@ -13,9 +13,7 @@ impl SunnyAnimation {
             Self::create_frame_4(),
         ];
 
-        Self {
-            frames,
-        }
+        Self { frames }
     }
 
     fn create_frame_1() -> Vec<String> {
