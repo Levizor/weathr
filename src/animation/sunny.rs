@@ -7,53 +7,36 @@ pub struct SunnyAnimation {
 
 impl SunnyAnimation {
     pub fn new() -> Self {
-        let frames = vec![
-            Self::create_frame_1(),
-            Self::create_frame_2(),
-            Self::create_frame_3(),
-            Self::create_frame_4(),
-        ];
+        let frames = vec![Self::create_frame_1(), Self::create_frame_2()];
 
         Self { frames }
     }
 
     fn create_frame_1() -> Vec<String> {
         vec![
-            "    \\  |  /".to_string(),
-            "     .-\"-.".to_string(),
-            "--- (  O  ) ---".to_string(),
-            "     `-.-'".to_string(),
-            "    /  |  \\".to_string(),
+            "      ;   :   ;".to_string(),
+            "   .   \\_,!,_/   ,".to_string(),
+            "    `.,'     `.,'".to_string(),
+            "     /         \\".to_string(),
+            "~ -- :         : -- ~".to_string(),
+            "     \\         /".to_string(),
+            "    ,'`._   _.'`.".to_string(),
+            "   '   / `!` \\   `".to_string(),
+            "      ;   :   ;".to_string(),
         ]
     }
 
     fn create_frame_2() -> Vec<String> {
         vec![
-            "     \\ | /".to_string(),
-            "   .-\"   \"-.".to_string(),
-            "-- (   O   ) --".to_string(),
-            "   `-.   .-'".to_string(),
-            "     / | \\".to_string(),
-        ]
-    }
-
-    fn create_frame_3() -> Vec<String> {
-        vec![
-            "    /  |  \\".to_string(),
-            "     .-\"-.".to_string(),
-            "--- (  O  ) ---".to_string(),
-            "     `-.-'".to_string(),
-            "    \\  |  /".to_string(),
-        ]
-    }
-
-    fn create_frame_4() -> Vec<String> {
-        vec![
-            "     / | \\".to_string(),
-            "   .-\"   \"-.".to_string(),
-            "-- (   O   ) --".to_string(),
-            "   `-.   .-'".to_string(),
-            "     \\ | /".to_string(),
+            "      .   |   .".to_string(),
+            "   ;   \\_,|,_/   ;".to_string(),
+            "    `.,'     `.,'".to_string(),
+            "     /         \\".to_string(),
+            "~ -- |         | -- ~".to_string(),
+            "     \\         /".to_string(),
+            "    ,'`._   _.'`.".to_string(),
+            "   ;   / `|` \\   ;".to_string(),
+            "      .   |   .".to_string(),
         ]
     }
 }
