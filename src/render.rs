@@ -55,8 +55,7 @@ impl TerminalRenderer {
         Ok(())
     }
 
-    pub fn update_size(&mut self) -> io::Result<()> {
-        let (width, height) = terminal::size()?;
+    pub fn manual_resize(&mut self, width: u16, height: u16) -> io::Result<()> {
         if width != self.width || height != self.height {
             self.width = width;
             self.height = height;

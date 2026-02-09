@@ -205,10 +205,6 @@ async fn run_app(
             }
         }
 
-        renderer.update_size()?;
-        let (term_width, term_height) = renderer.get_size();
-        world_scene.update_size(term_width, term_height);
-
         renderer.clear()?;
 
         if !is_day {
@@ -358,17 +354,24 @@ async fn run_app(
 
         renderer.flush()?;
 
-        if event::poll(FRAME_DURATION)?
-            && let Event::Key(key_event) = event::read()?
-        {
-            match key_event.code {
-                KeyCode::Char('q') | KeyCode::Char('Q') => break,
-                KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
-                    break;
+        if event::poll(FRAME_DURATION)? {
+            match event::read()? {
+                Event::Resize(width, height) => {
+                    renderer.manual_resize(width, height)?;
                 }
+                Event::Key(key_event) => match key_event.code {
+                    KeyCode::Char('q') | KeyCode::Char('Q') => break,
+                    KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                        break;
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }
+
+        let (term_width, term_height) = renderer.get_size();
+        world_scene.update_size(term_width, term_height);
 
         if !is_raining && !is_thunderstorm && !is_snowing {
             // Update sunny animation frame less frequently
