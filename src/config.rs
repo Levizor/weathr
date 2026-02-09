@@ -6,6 +6,8 @@ use std::path::PathBuf;
 pub struct Config {
     #[serde(default)]
     pub location: Location,
+    #[serde(default)]
+    pub hide_hud: bool,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -226,6 +228,7 @@ longitude = 0.0
                 auto: false,
                 hide: false,
             },
+            hide_hud: false,
         };
         let result = config.validate();
         assert!(result.is_err());
@@ -241,6 +244,7 @@ longitude = 0.0
                 auto: false,
                 hide: false,
             },
+            hide_hud: false,
         };
         let result = config.validate();
         assert!(result.is_err());
@@ -256,6 +260,7 @@ longitude = 0.0
                 auto: false,
                 hide: false,
             },
+            hide_hud: false,
         };
         let result = config.validate();
         assert!(result.is_err());
@@ -271,6 +276,7 @@ longitude = 0.0
                 auto: false,
                 hide: false,
             },
+            hide_hud: false,
         };
         let result = config.validate();
         assert!(result.is_err());
@@ -278,7 +284,7 @@ longitude = 0.0
     }
 
     #[test]
-    fn test_validation_valid_coordinates() {
+    fn test_validation_valid_config() {
         let config = Config {
             location: Location {
                 latitude: 52.52,
@@ -286,7 +292,9 @@ longitude = 0.0
                 auto: false,
                 hide: false,
             },
+            hide_hud: false,
         };
-        assert!(config.validate().is_ok());
+        let result = config.validate();
+        assert!(result.is_ok());
     }
 }

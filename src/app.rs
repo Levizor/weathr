@@ -61,6 +61,7 @@ pub struct App {
     animations: AnimationManager,
     scene: WorldScene,
     weather_receiver: mpsc::Receiver<Result<WeatherData, String>>,
+    hide_hud: bool,
 }
 
 impl App {
@@ -135,6 +136,7 @@ impl App {
             animations,
             scene,
             weather_receiver: rx,
+            hide_hud: config.hide_hud,
         }
     }
 
@@ -203,12 +205,14 @@ impl App {
             self.state.update_loading_animation();
             self.state.update_cached_info();
 
-            renderer.render_line_colored(
-                2,
-                1,
-                &self.state.cached_weather_info,
-                crossterm::style::Color::Cyan,
-            )?;
+            if !self.hide_hud {
+                renderer.render_line_colored(
+                    2,
+                    1,
+                    &self.state.cached_weather_info,
+                    crossterm::style::Color::Cyan,
+                )?;
+            }
 
             renderer.flush()?;
 

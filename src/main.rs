@@ -39,6 +39,9 @@ struct Cli {
 
     #[arg(long, help = "Hide location coordinates in UI")]
     hide_location: bool,
+
+    #[arg(long, help = "Hide HUD (status line)")]
+    hide_hud: bool,
 }
 
 #[tokio::main]
@@ -69,6 +72,9 @@ async fn main() -> io::Result<()> {
     }
     if cli.hide_location {
         config.location.hide = true;
+    }
+    if cli.hide_hud {
+        config.hide_hud = true;
     }
 
     // Auto-detect location if enabled
