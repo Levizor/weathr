@@ -2,6 +2,7 @@ use crate::render::TerminalRenderer;
 use crate::weather::types::RainIntensity;
 use crossterm::style::Color;
 use rand::prelude::*;
+use std::collections::VecDeque;
 use std::io;
 
 const MAX_SPLASHES: usize = 100;
@@ -26,8 +27,8 @@ struct Splash {
 
 pub struct RaindropSystem {
     drops: Vec<Raindrop>,
-    splashes: Vec<Splash>,
-    new_splashes: Vec<Splash>,
+    splashes: VecDeque<Splash>,
+    new_splashes: VecDeque<Splash>,
     terminal_width: u16,
     terminal_height: u16,
     intensity: RainIntensity,
@@ -38,8 +39,8 @@ impl RaindropSystem {
     pub fn new(terminal_width: u16, terminal_height: u16, intensity: RainIntensity) -> Self {
         let mut system = Self {
             drops: Vec::new(),
-            splashes: Vec::new(),
-            new_splashes: Vec::with_capacity(20),
+            splashes: VecDeque::new(),
+            new_splashes: VecDeque::with_capacity(20),
             terminal_width,
             terminal_height,
             intensity,
@@ -172,7 +173,7 @@ impl RaindropSystem {
             // Hit ground?
             if drop.y >= (terminal_height - 1) as f32 {
                 if drop.z_index == 1 && rng.random::<f32>() < splash_chance {
-                    new_splashes.push(Splash {
+                    new_splashes.push_back(Splash {
                         x: drop.x as u16,
                         y: terminal_height - 1,
                         timer: 0,
@@ -192,8 +193,8 @@ impl RaindropSystem {
 
         self.splashes.append(&mut self.new_splashes);
 
-        if self.splashes.len() > MAX_SPLASHES {
-            self.splashes.drain(0..(self.splashes.len() - MAX_SPLASHES));
+        while self.splashes.len() > MAX_SPLASHES {
+            self.splashes.pop_front();
         }
 
         self.splashes.retain_mut(|splash| {

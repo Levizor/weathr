@@ -1,6 +1,7 @@
 use crate::render::TerminalRenderer;
 use crossterm::style::Color;
 use rand::prelude::*;
+use std::collections::VecDeque;
 use std::io;
 
 const MAX_BOLTS: usize = 10;
@@ -21,7 +22,7 @@ struct LightningBolt {
 }
 
 pub struct ThunderstormSystem {
-    bolts: Vec<LightningBolt>,
+    bolts: VecDeque<LightningBolt>,
     state: LightningState,
     timer: u16,
     terminal_width: u16,
@@ -33,7 +34,7 @@ pub struct ThunderstormSystem {
 impl ThunderstormSystem {
     pub fn new(terminal_width: u16, terminal_height: u16) -> Self {
         Self {
-            bolts: Vec::new(),
+            bolts: VecDeque::new(),
             state: LightningState::Idle,
             timer: 0,
             terminal_width,
@@ -91,14 +92,14 @@ impl ThunderstormSystem {
             }
         }
 
-        self.bolts.push(LightningBolt {
+        self.bolts.push_back(LightningBolt {
             segments,
             age: 0,
             max_age: 10,
         });
 
-        if self.bolts.len() > MAX_BOLTS {
-            self.bolts.drain(0..(self.bolts.len() - MAX_BOLTS));
+        while self.bolts.len() > MAX_BOLTS {
+            self.bolts.pop_front();
         }
     }
 

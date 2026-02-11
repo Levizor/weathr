@@ -2,6 +2,7 @@ use crate::render::TerminalRenderer;
 use crate::weather::types::FogIntensity;
 use crossterm::style::Color;
 use rand::prelude::*;
+use std::collections::VecDeque;
 use std::io;
 
 struct FogWisp {
@@ -60,7 +61,7 @@ impl FogWisp {
 }
 
 pub struct FogSystem {
-    wisps: Vec<FogWisp>,
+    wisps: VecDeque<FogWisp>,
     terminal_width: u16,
     terminal_height: u16,
     intensity: FogIntensity,
@@ -70,7 +71,7 @@ pub struct FogSystem {
 impl FogSystem {
     pub fn new(terminal_width: u16, terminal_height: u16, intensity: FogIntensity) -> Self {
         Self {
-            wisps: Vec::new(),
+            wisps: VecDeque::new(),
             terminal_width,
             terminal_height,
             intensity,
@@ -105,7 +106,7 @@ impl FogSystem {
             for _ in 0..2 {
                 if self.wisps.len() < target_count {
                     self.wisps
-                        .push(FogWisp::new(terminal_width, terminal_height, rng));
+                        .push_back(FogWisp::new(terminal_width, terminal_height, rng));
                 }
             }
         }
