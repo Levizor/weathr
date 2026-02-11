@@ -10,9 +10,9 @@ Features real-time weather from Open-Meteo with animated rain, snow, thunderstor
 
 ## Demo
 
-|                 Thunderstorm Night                 |          Snow          |
-| :------------------------------------------------: | :--------------------: |
-| ![Thunderstorm Night](docs/thunderstorm-night.gif) | ![Snow](docs/snow.gif) |
+|                                    Thunderstorm Night                                     |                             Snow                              |
+| :---------------------------------------------------------------------------------------: | :-----------------------------------------------------------: |
+| <img src="docs/thunderstorm-night.gif" width="600" height="400" alt="Thunderstorm Night"> | <img src="docs/snow.gif" width="600" height="400" alt="Snow"> |
 
 ## Contents
 
