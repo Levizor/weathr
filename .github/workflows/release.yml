@@ -51,6 +51,8 @@ jobs:
           targets: ${{ matrix.target }}
           
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
 
       - name: Install cross
         if: matrix.use_cross == true
